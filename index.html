@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Porsuk · Madset Asistanı</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <main>
+    <header><div><span class="brand">madset</span><span class="badge">Porsuk</span><h1>Reklamı Porsuk'a sor.</h1><p>Reklam sorularına kısa cevaplar, net adımlar.</p></div><button id="reset" type="button">Yeni sohbet</button></header>
+    <p id="status" role="status">Bağlantı kontrol ediliyor…</p>
+    <section id="messages" role="log" aria-label="Sohbet" aria-live="polite"></section>
+    <div id="suggestions" aria-label="Örnek sorular">
+      <button type="button">Madset ile nasıl başlarım?</button>
+      <button type="button">Tıklama var ama satış yok. Neden?</button>
+      <button type="button">Reklam bütçemi nasıl belirlemeliyim?</button>
+    </div>
+    <p id="error" role="alert" hidden></p>
+    <form id="chat-form">
+      <label for="message">Sorunu yaz</label>
+      <div class="composer"><textarea id="message" rows="3" maxlength="6000" placeholder="Örneğin: İlk reklamımı hazırlarken nelere dikkat etmeliyim?" required></textarea><button id="send" type="submit">Gönder</button></div>
+      <p class="note">Enter ile gönder · Shift + Enter ile yeni satır. Mesajların yanıt için Anthropic'e gönderilir. Şifre ve müşteri bilgisi paylaşma. Bu prototip reklam hesabına erişmez.</p>
+    </form>
+  </main>
+</body>
+</html>
