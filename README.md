@@ -1,4 +1,4 @@
-# Porsuk — Madset asistanı
+# Pursuk — Madset asistanı
 
 Claude Messages API kullanan, ek paket kurulumu gerektirmeyen bir Node.js uygulaması. Node.js 22 veya üzeri gerekir.
 
@@ -33,4 +33,19 @@ En fazla 30 soru-cevap turu (istekte en fazla 60 mesaj), mesaj başına 6.000 ve
 `npm test`: Girdi doğrulama, kaynak ve talimatların Claude isteğine eklenmesi, anahtarın tarayıcıya sızmaması, eksik anahtar, hata ve kaynak kontrolü testleri. Sahte Claude yanıtları kullanılır; canlı model kalitesini kanıtlamaz.
 
 API referansı: https://platform.claude.com/docs/en/api/messages/create
-#
+
+## Token ölçümü
+
+Claude API usage alanları kullanılır; karakterden token tahmini yapılmaz. Akış başındaki kullanım, message_delta içindeki kümülatif değerlerle güncellenir; üst üste toplanmaz. Giriş; normal giriş, önbellek okuma ve yazmanın toplamıdır. Çıkış ayrıca sayılır. Her isteğin benzersiz kimliğiyle ara ve son ölçümler tek kayıtta güncellenir.
+
+Sohbet toplamı yalnızca bu sürümde tarayıcıya ulaşan ölçümleri kapsar. Önceki mesajlar ve ağ kesilmesi nedeniyle alınamayan kullanım dahil olmayabilir. Kısmi ölçümler işaretlenir. Yeni sohbet toplamı temizler; sayfa yenilemesi aynı sekmedeki ölçümleri geri getirir. Sunucu dosyaya kullanım kaydı tutmaz.
+
+USD tutarı standart Sonnet 4.6 tarifesinden hesaplanan tahmindir: milyon token başına normal giriş $3, çıkış $15, önbellek okuma $0.30, 5 dakika yazma $3.75 ve 1 saat yazma $6. Başka modelde fiyat bilinmiyorsa ücret hesaplanmaz. Doğrulama tarihi 2 Kasım 2026; fiyat değişikliği, özel hesap koşulları ve vergileri yansıtmaz. Resmî kaynak: https://platform.claude.com/docs/en/about-claude/pricing
+
+## Hazır cevaplar
+
+`hazir-yanitlar.json` dosyası, onaylı soru biçimleri ve sabit cevapları içerir. `faq.mjs` sorunun tamamını eşleştirir; büyük/küçük harf, Türkçe harflerin düz yazımı ve noktalama farklılıklarını tolere eder. LLM ile sınıflandırma, embedding veya bulanık eşleştirme yapılmaz. Eşleşme yoksa Claude akışı kullanılır. Belirsiz, çok sorulu veya kişiye özel sorular için yeni varyant eklerken dikkatli olun.
+
+Hazır cevaplar Claude API çağrısı yapmaz ve API anahtarı olmadan da çalışır. Ölçümde 0 API tokenı ve 0 USD olarak, Claude isteklerinden ayrı sayılır. Aynı 30 tur sınırına dahildir. Önceki hazır cevaplar sohbet geçmişinde korunur; sonraki bir soru Claude'a yönlendirilirse bu geçmiş de giriş tokenlarına dahil olur. Tasarruf oranı gerçek soru dağılımına bağlıdır; hazır cevapların yararlı olduğu varsayılarak sabit bir yüzde verilmez.
+
+Katalog her soruda dosyadan okunur. Dosya bozuksa veya okunamıyorsa Claude'a düşülür. Sabit yanıtları ürün bilgisi değiştikçe güncelleyin. Hazır cevaplar, LLM yanıtları gibi bu yerel prototipin müşteri verilerine erişimi olduğu anlamına gelmez.

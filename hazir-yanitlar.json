@@ -1,0 +1,52 @@
+[
+  {
+    "id": "porsuk",
+    "questions": ["sen","Adın ne?", "Sen kimsin?", "Pursuk kim?", "Pursuk nedir?", "İsmin ne?"],
+    "answer": "Ben Pursuk, Madset'in reklam asistanıyım 🍯 Madset kullanımı ve reklam sorularında yardımcı olurum. Reklam hesabına erişemem veya senin adına işlem yapamam."
+  },
+  {
+    "id": "madset",
+    "questions": ["madset", "Madset nedir?", "Madset ne?", "Madset ne işe yarar?", "Madset ne yapıyor?", "Madset bir ajans mı?", "Madset ajans mı?", "Madset'i anlat."],
+    "answer": "Madset, küçük ve orta ölçekli işletmelerin reklamlarını kendilerinin yönetmesine yardımcı olan bir platform. Reklam içeriği hazırlama, yayınlama ve sonuçları anlama süreçlerini destekler. Bütçe ve yayın onayı sende kalır."
+  },
+  {
+    "id": "iletisim",
+    "questions": ["Destek e-postası ne?", "Destek maili ne?", "Destek adresi nedir?", "Destek e-posta adresi nedir?", "Madset destek maili nedir?", "Madset'e nasıl ulaşırım?", "Destek ekibine nasıl ulaşırım?", "İletişim adresi nedir?", "İnsanla görüşmek istiyorum.", "Beni insana bağla.", "Müşteri temsilcisine bağla.", "insan"],
+    "answer": "Destek için tanıtım belgesinde yer alan info@pursula.com adresine yazabilirsin. Ben doğrudan aktarım veya destek kaydı oluşturamıyorum; istersen göndereceğin mesajı hazırlamana yardımcı olurum."
+  },
+  {
+    "id": "baslangic",
+    "questions": ["Madset ile nasıl başlarım?", "Madset'e nasıl başlarım?", "Madset kullanmaya nasıl başlarım?", "Madset'e nasıl kayıt olurum?"],
+    "answer": "Başlangıç için info@pursula.com üzerinden iletişime geçebilirsin. Markanı tanıtmak için web siteni, Instagram hesabını veya ürün bilgilerini kullanabilirsin. Güncel kayıt ve kurulum adımlarını ekipten teyit etmeni öneririm."
+  },
+  {
+    "id": "websitesi",
+    "questions": ["Web sitem yok, Madset kullanabilir miyim?", "Madset için web sitesi şart mı?", "Madset kullanmak için web sitesi gerekli mi?", "Web sitem yok, sadece Instagram hesabım var. Madset kullanabilir miyim?", "Web sitem yok, sadece Instagram'ım var. Olur mu?", "web sitem yok"],
+    "answer": "Web sitesi şart değil. Madset'e markanı Instagram hesabın veya ürün bilgilerinle de tanıtabilirsin."
+  },
+  {
+    "id": "butce-kontrol",
+    "questions": ["Bütçeyi kim belirliyor?", "Reklam bütçesini kim belirliyor?", "Madset'te bütçeyi kim belirliyor?", "Bütçe kontrolü kimde?", "Günlük bütçeyi kim belirliyor?"],
+    "answer": "Günlük reklam bütçesini sen belirlersin. Madset'in bütçe önerileri de ancak onayınla uygulanır. Bu sohbet üzerinden bütçeni değiştiremiyorum."
+  },
+  {
+    "id": "onay",
+    "questions": ["Madset onayım olmadan bütçemi değiştirir mi?", "Madset benim onayım olmadan bütçemi değiştirir mi?", "Madset reklamı onaysız yayınlar mı?", "Madset onayım olmadan reklam yayınlar mı?", "Tavsiyeler otomatik mi uygulanıyor?"],
+    "answer": "Madset'te içerik, mesaj ve hedef yayın öncesinde senin onayından geçer. Tavsiyeler ve bütçe değişikliği önerileri de yalnızca onayınla uygulanır."
+  },
+  {
+    "id": "platformlar",
+    "questions": ["Madset hangi platformlarda reklam yayınlıyor?", "Madset hangi platformlarda çalışıyor?", "Madset hangi reklam platformlarını destekliyor?", "Hangi platformlarda reklam verebilirim?"],
+    "answer": "Elimdeki Madset ürün notunda Facebook ve Instagram üzerinden yayın akışı anlatılıyor. Diğer platformların güncel canlı desteği doğrulanmış değil; kullanmak istediğin platformu ekiple teyit edebilirsin."
+  },
+  {
+    "id": "mindset",
+    "questions": ["Mindset nedir?", "Mindset ne işe yarar?"],
+    "answer": "Mindset, Madset'in marka profili katmanı. Markanın kimliğini, renklerini ve anlatım tonunu ortak bir profilde toplar; içerikler bu profile göre hazırlanır."
+  },
+  {
+    "id": "adviset",
+    "questions": ["Adviset nedir?", "Adviset ne işe yarar?"],
+    "answer": "Adviset, reklam sonuçlarını anlaşılır önerilere dönüştüren Madset katmanı. Öneriler fırsat, uyarı, bağlantı gerekli veya bilgi türünde olabilir. Değişiklikler senin onayınla uygulanır."
+  }
+]

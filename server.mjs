@@ -2,12 +2,16 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { readEvents } from './sse.mjs';
+import { randomUUID } from 'node:crypto';
+import { measureUsage } from './usage.mjs';
+import { findFaq } from './faq.mjs';
 import { limits, validMessages } from './conversation.mjs';
 export { validMessages } from './conversation.mjs';
 
 const root = new URL('./', import.meta.url);
 const staticFiles = { '/': ['index.html', 'text/html'], '/app.js': ['app.js', 'text/javascript'], '/style.css': ['style.css', 'text/css'], '/sse.mjs': ['sse.mjs', 'text/javascript'], '/porsuk.png': ['porsuk.png', 'image/png'] };
 staticFiles['/conversation.mjs'] = ['conversation.mjs', 'text/javascript'];
+staticFiles['/usage.mjs'] = ['usage.mjs', 'text/javascript'];
 const MAX_BODY = limits.requestBytes;
 
 function reply(res, status, value) {
@@ -47,6 +51,18 @@ export function createApp({ apiKey = process.env.ANTHROPIC_API_KEY, model = proc
       let body;
       try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { return reply(res, 400, { error: 'Mesaj biçimi geçersiz.' }); }
       if (!validMessages(body?.messages)) return reply(res, 400, { error: 'Bu sohbet için 30 soru-cevap turu veya toplam 120.000 karakter sınırına ulaşıldı; ya da mesaj biçimi geçersiz. Yeni sohbet açabilirsin.' });
+      let faq = null;
+      try { faq = await findFaq(body.messages.at(-1).content); } catch { /* If the catalogue is unavailable, use Claude. */ }
+      if (faq) {
+        const measurement = { id: randomUUID(), model: 'hazir-yanit', source: 'faq', complete: true, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, totalTokens: 0, estimatedUsd: 0, priceDate: null };
+        if (body.stream === true) {
+          res.writeHead(200, { 'Content-Type': 'text/event-stream; charset=utf-8', 'Cache-Control': 'no-cache, no-transform' });
+          res.write(`data: ${JSON.stringify({ type: 'text', text: faq.answer })}\n\n`);
+          res.write(`data: ${JSON.stringify({ type: 'done', source: 'faq', faqId: faq.id, truncated: false, measurement })}\n\n`);
+          return res.end();
+        }
+        return reply(res, 200, { answer: faq.answer, source: 'faq', faqId: faq.id, truncated: false, measurement });
+      }
       if (!apiKey) return reply(res, 503, { error: 'Claude anahtarı henüz eklenmedi. Proje klasöründeki anahtar-ekle.ps1 dosyasını çalıştırıp sunucuyu yeniden başlatın.' });
       recent = recent.filter(t => Date.now() - t < 60000);
       if (busy || recent.length >= 20) return reply(res, 429, { error: 'Kısa süre içinde çok fazla istek geldi. Biraz sonra tekrar deneyin.' });
@@ -81,8 +97,20 @@ export function createApp({ apiKey = process.env.ANTHROPIC_API_KEY, model = proc
           let receivedText = false;
           let truncated = false;
           let stopped = false;
+          const measurementId = randomUUID();
+          let usage = {};
+          let servingModel = model;
           for await (const event of readEvents(upstream.body)) {
             if (event.type === 'error') throw new Error('Provider stream error');
+            if (event.type === 'message_start') {
+              servingModel = event.message?.model || model;
+              usage = { ...usage, ...event.message?.usage };
+            }
+            if (event.type === 'message_delta') usage = { ...usage, ...event.usage };
+            if (event.type === 'message_start' || event.type === 'message_delta') {
+              const measurement = measureUsage(usage, { id: measurementId, model: servingModel });
+              if (measurement) emit({ type: 'usage', measurement });
+            }
             if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
               receivedText = true;
               emit({ type: 'text', text: event.delta.text });
@@ -91,13 +119,13 @@ export function createApp({ apiKey = process.env.ANTHROPIC_API_KEY, model = proc
             if (event.type === 'message_stop') { stopped = true; break; }
           }
           if (!stopped || !receivedText) throw new Error('Incomplete response');
-          emit({ type: 'done', truncated });
+          emit({ type: 'done', truncated, measurement: measureUsage(usage, { id: measurementId, model: servingModel, complete: true }) });
           return res.end();
         }
         const data = await upstream.json();
         const answer = data.content?.filter(b => b.type === 'text').map(b => b.text).join('\n');
         if (!answer) return reply(res, 502, { error: 'Claude metin yanıtı döndürmedi. Tekrar deneyin.' });
-        return reply(res, 200, { answer, truncated: data.stop_reason === 'max_tokens' });
+        return reply(res, 200, { answer, truncated: data.stop_reason === 'max_tokens', measurement: measureUsage(data.usage, { id: randomUUID(), model: data.model || model, complete: true }) });
       } finally { busy = false; }
     } catch (error) {
       if (res.destroyed) return;
@@ -116,12 +144,12 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   app.on('error', error => {
     if (error.code === 'EADDRINUSE') {
       console.log(`Bu adres zaten kullaniliyor: http://127.0.0.1:${port}`);
-      console.log('Porsuk zaten aciksa tarayicidan devam edebilirsiniz.');
+      console.log('Pursuk zaten aciksa tarayicidan devam edebilirsiniz.');
       console.log('Guncellemeleri yuklemek icin once eski sunucu penceresinde Ctrl+C yapin, sonra yeniden baslatin.');
     } else {
-      console.error('Porsuk baslatilamadi. Port ayarini ve yerel erisim izinlerini kontrol edin.');
+      console.error('Pursuk baslatilamadi. Port ayarini ve yerel erisim izinlerini kontrol edin.');
       process.exitCode = 1;
     }
   });
-  app.listen(port, '127.0.0.1', () => console.log(`Porsuk: http://127.0.0.1:${port}`));
+  app.listen(port, '127.0.0.1', () => console.log(`Pursuk: http://127.0.0.1:${port}`));
 }

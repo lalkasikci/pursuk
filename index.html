@@ -3,14 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Porsuk · Madset Asistanı</title>
+  <title>Pursuk · Madset Asistanı</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" type="module"></script>
 </head>
 <body>
   <main>
-    <header><div><span class="brand">madset</span><span class="badge">Porsuk</span><h1>Reklamı Porsuk'a sor.</h1><p>Reklam sorularına kısa cevaplar, net adımlar.</p></div><button id="reset" type="button">Yeni sohbet</button></header>
+    <header><div><span class="brand">madset</span><span class="badge">Pursuk</span><h1>Reklamı Pursuk'a sor.</h1><p>Reklam sorularına kısa cevaplar, net adımlar.</p></div><button id="reset" type="button">Yeni sohbet</button></header>
     <p id="status" role="status">Bağlantı kontrol ediliyor…</p>
+    <details id="usage-panel" open>
+      <summary>Token kullanımı</summary>
+      <p id="usage-last">Henüz ölçülen istek yok. Bir mesaj gönderince burada görünecek.</p>
+      <p id="usage-total"></p>
+      <p class="note">Giriş: talimatlar, Madset bilgisi ve sohbet geçmişi dahil. Yalnızca bu sürümde alınan kullanım verileri sayılır; kesilen istekler eksik olabilir. USD tutarı standart fiyatlarla tahmindir, fatura değildir. <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener noreferrer">Fiyat kaynağı · 2 Kasım 2026</a></p>
+    </details>
     <section id="messages" role="log" aria-label="Sohbet" aria-live="polite"></section>
     <div id="suggestions" aria-label="Örnek sorular">
       <button type="button">Madset ile nasıl başlarım?</button>
