@@ -30,3 +30,22 @@ test('kişisel sorular, olumsuzluklar ve birden çok soruda hazır cevap seçilm
     'Bütçemi artır.', 'Madset ne kadar?', 'Deneme kaç gün?'
   ]) assert.equal(await findFaq(question), null, question);
 });
+
+test('nezaket, eşdeğer mail yazımı ve tek konu yazım hatası tanınır', async () => {
+  assert.equal((await findFaq('Merhaba, Madset nedir? Teşekkürler!'))?.matchType, 'polite');
+  assert.equal((await findFaq('Merhaba, destek email adresi nedir? Teşekkürler!'))?.matchType, 'wording');
+  assert.equal((await findFaq('Madste nedir?'))?.matchType, 'spelling');
+  assert.equal((await findFaq('madsett nedir'))?.id, 'madset');
+  assert.equal((await findFaq('Bir sorun yaşadım, kime yazabilirim?'))?.id, 'iletisim');
+  assert.equal((await findFaq('Selam, destek için kime yazabilirim?'))?.id, 'iletisim');
+});
+
+test('soru fiilindeki değişiklikler düzeltilmez; belirsiz konu seçilmez', async () => {
+  for (const question of ['Madset nedi?', 'Madset nedir fiyatı ne?', 'Destek maili ne değil?', 'Madset bütçesini ben mi belirlemiyorum?', 'Merhaba Madset nedir ve benim işletmeme uygun mu?', 'Madste nedir ve nasıl kullanırım?']) {
+    assert.equal(await findFaq(question), null, question);
+  }
+  assert.equal(matchFaq('Madset nedir?', [
+    { id: 'one', questions: ['Madset nedir?'], answer: 'A' },
+    { id: 'two', questions: ['Madset nedir?'], answer: 'B' }
+  ]), null);
+});

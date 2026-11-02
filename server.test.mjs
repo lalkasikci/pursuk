@@ -3,9 +3,12 @@ import assert from 'node:assert/strict';
 import { createApp, validMessages } from './server.mjs';
 import { readEvents } from './sse.mjs';
 import { restoreConversation, storageKey } from './conversation.mjs';
+import { hashPassword } from './admin-auth.mjs';
+const password = 'test-password-only-123';
+const credentials = await hashPassword(password);
 
 async function withApp(options, run) {
-  const app = createApp(options);
+  const app = createApp({ ...options, adminCredentialLoader: async () => credentials });
   await new Promise(resolve => app.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${app.address().port}`;
   try { await run(base); } finally { app.closeAllConnections(); await new Promise(resolve => app.close(resolve)); }
@@ -14,6 +17,12 @@ const messages = [{ role: 'user', content: 'Reklamım tıklama alıyor ama satı
 const post = (base, data = { messages }, extraHeaders = {}) => fetch(`${base}/api/chat`, {
   method: 'POST', headers: { 'Content-Type': 'application/json', ...extraHeaders }, body: JSON.stringify(data)
 });
+async function metrics(base) {
+  const login = await fetch(`${base}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  assert.equal(login.status, 200);
+  const cookie = login.headers.get('set-cookie').split(';')[0];
+  return (await fetch(`${base}/api/admin/metrics`, { headers: { Cookie: cookie } })).json();
+}
 
 test('girdi sınırları ve roller doğrulanır', () => {
   assert.equal(validMessages(messages), true);
@@ -26,7 +35,7 @@ test('girdi sınırları ve roller doğrulanır', () => {
 test('eksik anahtarla gerçek isteğe çıkılmaz; statik dosyalar ve gizlilik', async () => {
   await withApp({ apiKey: '', fetchImpl: () => { throw new Error('Çağrılmamalı'); } }, async base => {
     assert.equal((await post(base)).status, 503);
-    assert.deepEqual(await (await fetch(`${base}/api/status`)).json(), { configured: false, model: 'claude-sonnet-4-6' });
+    assert.deepEqual(await (await fetch(`${base}/api/status`)).json(), { available: true });
     assert.equal((await fetch(base)).status, 200);
     assert.equal((await fetch(`${base}/.env.local`)).status, 404);
     assert.equal((await fetch(`${base}/bot-talimatlari.txt`)).status, 404);
@@ -49,7 +58,7 @@ test('Claude isteğinde kaynak ve talimatlar bulunur; anahtar istemciye dönmez'
   } }, async base => {
     const response = await post(base);
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { answer: 'Madset bir reklam platformudur.', truncated: false, measurement: null });
+    assert.deepEqual(await response.json(), { answer: 'Madset bir reklam platformudur.', truncated: false });
     const status = await (await fetch(`${base}/api/status`)).text();
     assert.equal(status.includes('fake-secret'), false);
   });
@@ -61,7 +70,7 @@ test('sağlayıcı hatası güvenli ve anlaşılır döner', async () => {
     const response = await post(base);
     assert.equal(response.status, 502);
     const body = await response.text();
-    assert.match(body, /anahtarı kabul edilmedi/);
+    assert.match(body, /biraz sonra tekrar dene/);
     assert.equal(body.includes('sensitive'), false);
   });
 });
@@ -112,7 +121,7 @@ test('ilk metin yanıt bitmeden iletilir; Türkçe parçalar korunur', async () 
     controller.enqueue(encode({ type: 'message_delta', delta: { stop_reason: 'end_turn' } }));
     controller.enqueue(encode({ type: 'message_stop' }));
     controller.close();
-    assert.deepEqual((await iterator.next()).value, { type: 'done', truncated: false, measurement: null });
+    assert.deepEqual((await iterator.next()).value, { type: 'done', truncated: false });
     assert.equal((await iterator.next()).done, true);
   });
 });
@@ -176,11 +185,13 @@ test('akış kullanımındaki kümülatif çıkış sayıları toplanmadan günc
     for await (const event of readEvents(response.body)) events.push(event);
     const done = events.at(-1);
     assert.equal(done.type, 'done');
-    assert.equal(done.measurement.inputTokens, 1000);
-    assert.equal(done.measurement.outputTokens, 25);
-    assert.equal(done.measurement.totalTokens, 1025);
-    assert.equal(done.measurement.complete, true);
-    assert.equal(new Set(events.filter(e => e.measurement).map(e => e.measurement.id)).size, 1);
+    assert.equal(events.some(e => e.measurement || e.type === 'usage' || e.route), false);
+    const admin = await metrics(base);
+    assert.equal(admin.records[0].measurement.inputTokens, 1000);
+    assert.equal(admin.records[0].measurement.outputTokens, 25);
+    assert.equal(admin.records[0].measurement.totalTokens, 1025);
+    assert.equal(admin.records[0].measurement.complete, true);
+    assert.equal(admin.retained, 1);
   });
 });
 
@@ -189,15 +200,15 @@ test('hazır cevap anahtarsız çalışır, Claude çağrılmaz ve 0 API tokenı
     const faqMessages = [{ role: 'user', content: 'Destek e-postası ne?' }];
     const json = await (await post(base, { messages: faqMessages })).json();
     assert.match(json.answer, /info@pursula.com/);
-    assert.equal(json.source, 'faq');
-    assert.equal(json.measurement.totalTokens, 0);
-    assert.equal(json.measurement.estimatedUsd, 0);
+    assert.deepEqual(Object.keys(json).sort(), ['answer', 'truncated']);
     const response = await post(base, { messages: faqMessages, stream: true });
     const events = [];
     for await (const event of readEvents(response.body)) events.push(event);
     assert.equal(events[0].type, 'text');
-    assert.equal(events.at(-1).source, 'faq');
-    assert.equal(events.at(-1).measurement.totalTokens, 0);
+    assert.deepEqual(events.at(-1), { type: 'done', truncated: false });
+    const admin = await metrics(base);
+    assert.equal(admin.faq, 2);
+    assert.equal(admin.totals.totalTokens, 0);
   });
 });
 
@@ -213,5 +224,21 @@ test('hazır yanıttan sonraki danışmanlık sorusu geçmişi koruyarak Claude�
     const conversation = [question, { role: 'assistant', content: faq.answer }, { role: 'user', content: 'Benim kuaförüm için nasıl kullanmalıyım?' }];
     assert.equal((await post(base, { messages: conversation })).status, 200);
     assert.deepEqual(requested.messages, conversation);
+  });
+});
+
+test('genişleyen hazır soru eşleştirmesi doğru yönlendirme nedenini döndürür', async () => {
+  await withApp({ apiKey: '', fetchImpl: () => { throw new Error('Claude çağrılmamalı'); } }, async base => {
+    const response = await post(base, { messages: [{ role: 'user', content: 'Merhaba, Madste nedir?' }] });
+    const data = await response.json();
+    assert.equal(response.status, 200);
+    assert.deepEqual(Object.keys(data).sort(), ['answer', 'truncated']);
+    const admin = await metrics(base);
+    assert.equal(admin.records[0].source, 'faq');
+    assert.equal(admin.records[0].topic, 'madset');
+    assert.equal(admin.records[0].method, 'spelling');
+    const page = await (await fetch(`${base}/chat`)).text();
+    assert.equal(page.includes('routing-list'), false);
+    assert.equal((await fetch(`${base}/routing.mjs`)).status, 200);
   });
 });

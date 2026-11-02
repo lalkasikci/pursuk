@@ -7,27 +7,16 @@
   <link rel="stylesheet" href="/style.css">
   <script src="/app.js" type="module"></script>
 </head>
-<body>
+<body class="chat-page">
   <main>
-    <header><div><span class="brand">madset</span><span class="badge">Pursuk</span><h1>Reklamı Pursuk'a sor.</h1><p>Reklam sorularına kısa cevaplar, net adımlar.</p></div><button id="reset" type="button">Yeni sohbet</button></header>
-    <p id="status" role="status">Bağlantı kontrol ediliyor…</p>
-    <details id="usage-panel" open>
-      <summary>Token kullanımı</summary>
-      <p id="usage-last">Henüz ölçülen istek yok. Bir mesaj gönderince burada görünecek.</p>
-      <p id="usage-total"></p>
-      <p class="note">Giriş: talimatlar, Madset bilgisi ve sohbet geçmişi dahil. Yalnızca bu sürümde alınan kullanım verileri sayılır; kesilen istekler eksik olabilir. USD tutarı standart fiyatlarla tahmindir, fatura değildir. <a href="https://platform.claude.com/docs/en/about-claude/pricing" target="_blank" rel="noopener noreferrer">Fiyat kaynağı · 2 Kasım 2026</a></p>
-    </details>
+    <header class="chat-header"><div class="chat-identity"><img class="avatar" src="/porsuk.png" alt="" width="40" height="40"><div><h1>Pursuk</h1><p>Madset asistanın</p></div></div><button id="reset" type="button">Yeni sohbet</button></header>
     <section id="messages" role="log" aria-label="Sohbet" aria-live="polite"></section>
-    <div id="suggestions" aria-label="Örnek sorular">
-      <button type="button">Madset ile nasıl başlarım?</button>
-      <button type="button">Tıklama var ama satış yok. Neden?</button>
-      <button type="button">Reklam bütçemi nasıl belirlemeliyim?</button>
-    </div>
+    <div id="suggestions" aria-label="Örnek sorular"><button type="button">Madset ile nasıl başlarım?</button><button type="button">Reklamım neden satış getirmiyor?</button></div>
     <p id="error" role="alert" hidden></p>
     <form id="chat-form">
-      <label for="message">Sorunu yaz</label>
-      <div class="composer"><textarea id="message" rows="3" maxlength="6000" placeholder="Örneğin: İlk reklamımı hazırlarken nelere dikkat etmeliyim?" required></textarea><button id="send" type="submit">Gönder</button></div>
-      <p class="note">Enter ile gönder · Shift + Enter ile yeni satır. Mesajların yanıt için Anthropic'e gönderilir. Şifre ve müşteri bilgisi paylaşma. Bu prototip reklam hesabına erişmez.</p>
+      <label for="message">Pursuk'a sor</label>
+      <div class="composer"><textarea id="message" rows="2" maxlength="6000" placeholder="Mesajını yaz…" required></textarea><button id="send" type="submit">Gönder</button></div>
+      <p class="note">Yanıt için mesajların Anthropic'e gönderilebilir. Hassas bilgi paylaşma.</p>
     </form>
   </main>
 </body>

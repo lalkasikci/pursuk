@@ -24,7 +24,7 @@ Talimat ve bilgi dosyaları her istekte yeniden okunur. Değişiklikleri denemek
 
 Bu sürüm yalnızca yerel bilgisayarda çalışır; internete açılmaya hazır değildir. Kullanıcı hesabı, reklam hesabı erişimi, işlem araçları, canlı politika araması veya destek kaydı bağlantısı içermez. Ürün kaynağı 2 Kasım 2026 tarihli kullanıcı belgesidir; bağımsız doğrulanmamıştır.
 
-Mesajlar sunucuda dosyaya kaydedilmez; sohbet geçmişi sessionStorage ile aynı sekmede korunur; sayfa yenilemede geri yüklenir, Yeni sohbet ile temizlenir. Sekme kapatılınca tarayıcının oturum saklama davranışına tabidir. Her istekte geçmiş ve Madset bilgi kaynağı Anthropic'e gönderilir. Bu, sağlayıcının kendi veri işleme/saklama politikalarından bağımsız bir yerel davranış açıklamasıdır. Müşteri verileriyle kullanımdan önce kurumunuzun veri paylaşımı gerekliliklerini değerlendirin.
+Mesajlar sunucuda dosyaya kaydedilmez; sohbet geçmişi sessionStorage ile aynı sekmede korunur; sayfa yenilemede geri yüklenir, Yeni sohbet ile temizlenir. Sekme kapatılınca tarayıcının oturum saklama davranışına tabidir. Claude'a yönlendirilen isteklerde geçmiş ve Madset bilgi kaynağı Anthropic'e gönderilir. Bu, sağlayıcının kendi veri işleme/saklama politikalarından bağımsız bir yerel davranış açıklamasıdır. Müşteri verileriyle kullanımdan önce kurumunuzun veri paylaşımı gerekliliklerini değerlendirin.
 
 En fazla 30 soru-cevap turu (istekte en fazla 60 mesaj), mesaj başına 6.000 ve toplam 120.000 karakter kabul edilir. Hangisine önce ulaşılırsa o sınır uygulanır. Sınırda yeni sohbet gerekir; geçmiş sessizce kırpılmaz. Yanıt limiti 650 tokendir. Yanıtlar akış halinde gösterilir. Varsayılan üslup kısa yanıtlar ve uygun yerde en fazla bir emojidir. RAG yerine küçük bilgi kaynağının tamamı gönderilir. Dakikada 20 deneme ve aynı anda bir Claude isteği kabul edilir; 120 saniye sunucu, 130 saniye tarayıcı zaman aşımı vardır; sohbetin boşta bekleme süresi sınırı yoktur. Otomatik tekrar denenmez.
 
@@ -38,14 +38,33 @@ API referansı: https://platform.claude.com/docs/en/api/messages/create
 
 Claude API usage alanları kullanılır; karakterden token tahmini yapılmaz. Akış başındaki kullanım, message_delta içindeki kümülatif değerlerle güncellenir; üst üste toplanmaz. Giriş; normal giriş, önbellek okuma ve yazmanın toplamıdır. Çıkış ayrıca sayılır. Her isteğin benzersiz kimliğiyle ara ve son ölçümler tek kayıtta güncellenir.
 
-Sohbet toplamı yalnızca bu sürümde tarayıcıya ulaşan ölçümleri kapsar. Önceki mesajlar ve ağ kesilmesi nedeniyle alınamayan kullanım dahil olmayabilir. Kısmi ölçümler işaretlenir. Yeni sohbet toplamı temizler; sayfa yenilemesi aynı sekmedeki ölçümleri geri getirir. Sunucu dosyaya kullanım kaydı tutmaz.
+Ölçümler ziyaretçiye gönderilmez. Yalnızca şifreli yönetim ekranında görülür. Sunucu belleğinde en fazla 500 istek tutulur; yeniden başlatmada sıfırlanır. Kısmi ve alınamayan ölçümler ayrıca belirtilir. Toplam, saklanan kayıtları kapsar; fatura yerine geçmez. Sunucu dosyaya kullanım kaydı tutmaz.
 
 USD tutarı standart Sonnet 4.6 tarifesinden hesaplanan tahmindir: milyon token başına normal giriş $3, çıkış $15, önbellek okuma $0.30, 5 dakika yazma $3.75 ve 1 saat yazma $6. Başka modelde fiyat bilinmiyorsa ücret hesaplanmaz. Doğrulama tarihi 2 Kasım 2026; fiyat değişikliği, özel hesap koşulları ve vergileri yansıtmaz. Resmî kaynak: https://platform.claude.com/docs/en/about-claude/pricing
 
 ## Hazır cevaplar
 
-`hazir-yanitlar.json` dosyası, onaylı soru biçimleri ve sabit cevapları içerir. `faq.mjs` sorunun tamamını eşleştirir; büyük/küçük harf, Türkçe harflerin düz yazımı ve noktalama farklılıklarını tolere eder. LLM ile sınıflandırma, embedding veya bulanık eşleştirme yapılmaz. Eşleşme yoksa Claude akışı kullanılır. Belirsiz, çok sorulu veya kişiye özel sorular için yeni varyant eklerken dikkatli olun.
+`hazir-yanitlar.json` dosyası, onaylı soru biçimleri ve sabit cevapları içerir. `faq.mjs` sorunun tamamını eşleştirir; büyük/küçük harf, Türkçe harflerin düz yazımı ve noktalama farklılıklarını tolere eder. LLM ile sınıflandırma veya embedding kullanılmaz. Selamlama ve nezaket farkları, eşdeğer e-posta yazımları ve yalnızca bilinen konu adlarında tek harflik yazım hataları yerel kurallarla ele alınır. Soru fiilleri ve olumsuzluklar yaklaşık eşleştirilmez. Birden fazla konu eşleşirse Claude kullanılır. Eşleşme yoksa Claude akışı kullanılır. Belirsiz, çok sorulu veya kişiye özel sorular için yeni varyant eklerken dikkatli olun.
 
 Hazır cevaplar Claude API çağrısı yapmaz ve API anahtarı olmadan da çalışır. Ölçümde 0 API tokenı ve 0 USD olarak, Claude isteklerinden ayrı sayılır. Aynı 30 tur sınırına dahildir. Önceki hazır cevaplar sohbet geçmişinde korunur; sonraki bir soru Claude'a yönlendirilirse bu geçmiş de giriş tokenlarına dahil olur. Tasarruf oranı gerçek soru dağılımına bağlıdır; hazır cevapların yararlı olduğu varsayılarak sabit bir yüzde verilmez.
 
 Katalog her soruda dosyadan okunur. Dosya bozuksa veya okunamıyorsa Claude'a düşülür. Sabit yanıtları ürün bilgisi değiştikçe güncelleyin. Hazır cevaplar, LLM yanıtları gibi bu yerel prototipin müşteri verilerine erişimi olduğu anlamına gelmez.
+
+
+## Ziyaretçi sohbeti ve yönetim
+
+- `/`: Sağ altta Pursuk simgesi bulunan yerel web sitesi demosu.
+- `/chat`: Teknik bilgi içermeyen ziyaretçi sohbeti. Kapatıp açma, aynı sekmedeki geçmişi korur.
+- `/admin`: Şifre ile giriş yapılan yönetim ekranı. Model, token, yaklaşık maliyet ve yönlendirme kayıtları burada görülür.
+
+İlk yönetici girişi için `yonetici-sifre.cmd` dosyasına çift tıklayıp en az 12 karakterlik şifre belirleyin. API anahtarınızdan farklı bir şifre kullanın. Şifrenin kendisi yerine rastgele tuzla scrypt özeti `.admin-auth.json` dosyasına yazılır; dosya Git dışında tutulur ve web üzerinden sunulmaz. Şifre değişince eski yönetim oturumları geçersiz olur. Oturum HttpOnly ve SameSite=Strict çerezle en fazla 8 saat sürer; beş yanlış denemeden sonra bir dakika beklenir. Yönetim şifresi kurulana kadar erişim kapalıdır.
+
+`/api/chat` yanıtları yalnızca metin, bitiş ve hata bilgisi içerir. Model, fiyat, token, hazır cevap kaynağı veya yönlendirme kaydı göndermez. İsteklere `admin=true` eklemek bu ayrımı değiştirmez. Yönetim verileri yalnızca doğrulanmış oturumla `/api/admin/metrics` üzerinden alınır.
+
+Sunucuda 500 isteklik sınırlı bellek kaydı tutulur, yönetimde son 100 istek listelenir. Soru metnindeki yaygın e-posta, telefon/uzun numara, URL ve API anahtarı biçimleri gizlenir. Bu tam anonimleştirme değildir; isimler ve standart dışı veriler kalabilir. Tam sohbet veya yanıt metni yönetim kaydına kopyalanmaz. Önceki prototipin tarayıcı içi kayıtları aktarılmaz; ziyaretçi uygulaması eski ölçüm/yönlendirme kayıtlarını sekmeden temizler.
+
+## Web sitesine ekleme
+
+Yerel denemede sayfaya `<script src="http://127.0.0.1:4317/widget.js" defer></script>` eklenebilir. Açılan pencere `/chat` sayfasını iframe içinde kullanır; kapatma konuşmayı sıfırlamaz. Escape tuşu ve kapatma düğmesi desteklenir.
+
+Bu adres yalnızca bu bilgisayarda çalışır. Canlı site için sunucunun HTTPS ile yayımlanması ve gerçek site adresine göre origin/iframe izinlerinin düzenlenmesi gerekir. Mevcut sürüm yalnızca aynı yerel kaynaktan gömülmeye izin verir; farklı alan adına doğrudan yayın yapılmış sayılmaz. Kullanıcı başına sınır, kalıcı veri yönetimi ve çok kullanıcılı çalışma bu değişiklik kapsamında eklenmedi.

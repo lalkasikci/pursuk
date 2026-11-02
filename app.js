@@ -1,6 +1,5 @@
 import { readEvents } from './sse.mjs';
 import { limits, storageKey, restoreConversation } from './conversation.mjs';
-import { usageStorageKey, validMeasurement, upsertUsage, usageTotals } from './usage.mjs';
 const log = document.querySelector('#messages');
 const form = document.querySelector('#chat-form');
 const input = document.querySelector('#message');
@@ -8,37 +7,17 @@ const errorBox = document.querySelector('#error');
 const send = document.querySelector('#send');
 const reset = document.querySelector('#reset');
 const suggestions = document.querySelector('#suggestions');
-let messages = restoreConversation(sessionStorage);
-let busy = false;
-let usageRecords = [];
+let storage;
 try {
-  const stored = JSON.parse(sessionStorage.getItem(usageStorageKey));
-  if (Array.isArray(stored) && stored.length <= 1000) {
-    for (const item of stored.filter(validMeasurement)) usageRecords = upsertUsage(usageRecords, item);
-  }
-} catch { /* Storage is optional; measurement still works in memory. */ }
-const formatTokens = number => number.toLocaleString('tr-TR');
-const formatCost = amount => amount === null ? 'bu model için hesaplanmadı' : new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'USD', minimumFractionDigits: 5, maximumFractionDigits: 5 }).format(amount);
-function renderUsage() {
-  const last = usageRecords.at(-1);
-  document.querySelector('#usage-last').textContent = last?.source === 'faq' ? 'Son yanıt: hazır cevap · Claude API kullanılmadı · 0 API tokenı · 0 USD.' : last ? `Son istek${last.complete ? '' : ' (kısmi)'}: giriş ${formatTokens(last.inputTokens)} · çıkış ${formatTokens(last.outputTokens)} · toplam ${formatTokens(last.totalTokens)} token · yaklaşık ${formatCost(last.estimatedUsd)}. Önbellek okuma/yazma: ${formatTokens(last.cacheReadTokens)}/${formatTokens(last.cacheWriteTokens)}.` : 'Henüz ölçülen istek yok. Bir mesaj gönderince burada görünecek.';
-  const sum = usageTotals(usageRecords);
-  const faqCount = usageRecords.filter(record => record.source === 'faq').length;
-  document.querySelector('#usage-total').textContent = last ? `Ölçülen yanıtlar: ${faqCount} hazır cevap, ${usageRecords.length - faqCount} Claude isteği. Giriş ${formatTokens(sum.inputTokens)} · çıkış ${formatTokens(sum.outputTokens)} · toplam ${formatTokens(sum.totalTokens)} token · yaklaşık ${formatCost(sum.estimatedUsd)}${sum.partial ? ` (${sum.partial} kısmi ölçüm dahil)` : ''}.` : '';
-}
-function recordUsage(measurement) {
-  if (!validMeasurement(measurement)) return;
-  usageRecords = upsertUsage(usageRecords, measurement);
-  try { sessionStorage.setItem(usageStorageKey, JSON.stringify(usageRecords)); } catch { /* Keep in-memory totals. */ }
-  renderUsage();
-}
-renderUsage();
-
+  storage = sessionStorage;
+  storage.removeItem('porsuk-token-usage-v1');
+  storage.removeItem('pursuk-routing-v1');
+} catch { /* Chat works when storage is disabled. */ }
+let messages = restoreConversation(storage);
+let busy = false;
 function saveConversation() {
-  try { sessionStorage.setItem(storageKey, JSON.stringify(messages)); }
-  catch { document.querySelector('#status').textContent = 'Sekme depolaması kullanılamıyor; sayfayı yenilersen sohbet kaybolabilir.'; }
+  try { storage?.setItem(storageKey, JSON.stringify(messages)); } catch { /* Optional storage. */ }
 }
-
 function addMessage(role, content) {
   const box = document.createElement('article');
   box.className = `message ${role}`;
@@ -52,7 +31,7 @@ function addMessage(role, content) {
     avatar.src = '/porsuk.png';
     avatar.alt = '';
     avatar.className = 'avatar';
-    avatar.width = avatar.height = 40;
+    avatar.width = avatar.height = 34;
     box.append(avatar);
   }
   const bubble = document.createElement('div');
@@ -60,7 +39,7 @@ function addMessage(role, content) {
   bubble.append(speaker, text);
   box.append(bubble);
   log.append(box);
-  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  log.scrollTop = log.scrollHeight;
   return box;
 }
 function welcome() {
@@ -69,9 +48,6 @@ function welcome() {
 reset.addEventListener('click', () => {
   if (busy) return;
   messages = [];
-  usageRecords = [];
-  try { sessionStorage.removeItem(usageStorageKey); } catch { /* Optional storage. */ }
-  renderUsage();
   saveConversation();
   log.replaceChildren();
   suggestions.hidden = false;
@@ -85,6 +61,9 @@ suggestions.addEventListener('click', event => {
   input.value = event.target.textContent;
   form.requestSubmit();
 });
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && window.parent !== window) window.parent.postMessage({ type: 'pursuk:close' }, location.origin);
+});
 input.addEventListener('keydown', event => {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
     event.preventDefault();
@@ -97,7 +76,7 @@ form.addEventListener('submit', async event => {
   if (!content || busy) return;
   const nextMessages = [...messages, { role: 'user', content }];
   if (nextMessages.length > limits.messages || nextMessages.reduce((n, m) => n + m.content.length, 0) > limits.totalCharacters) {
-    errorBox.textContent = '30 soru-cevap turu veya 120.000 karakter sınırına ulaştın. Mesajların burada kalıyor; devam etmek için yeni sohbet açabilirsin.';
+    errorBox.textContent = 'Bu sohbet uzadı. Devam etmek için yeni sohbet başlatabilirsin.';
     errorBox.hidden = false;
     return;
   }
@@ -107,7 +86,7 @@ form.addEventListener('submit', async event => {
   for (const button of suggestions.querySelectorAll('button')) button.disabled = true;
   send.textContent = 'Bekleniyor…';
   const userBox = addMessage('user', content);
-  const pending = addMessage('assistant', 'Yanıt hazırlanıyor…');
+  const pending = addMessage('assistant', 'Pursuk yazıyor…');
   pending.classList.add('pending');
   try {
     const response = await fetch('/api/chat', {
@@ -117,42 +96,32 @@ form.addEventListener('submit', async event => {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.error || 'Yanıt alınamadı.');
+      throw new Error(data.error || 'Yanıt alınamadı. Tekrar deneyebilirsin.');
     }
     let answer = '';
     let finished = false;
     let truncated = false;
-    let measurement = null;
     const text = pending.querySelector('p');
     for await (const event of readEvents(response.body)) {
       if (event.type === 'error') throw new Error(event.error);
-      if (event.type === 'usage') recordUsage(event.measurement);
       if (event.type === 'text') {
         answer += event.text;
         text.textContent = answer;
         pending.classList.remove('pending');
+        log.scrollTop = log.scrollHeight;
       }
-      if (event.type === 'done') {
-        finished = true;
-        truncated = event.truncated;
-        measurement = event.measurement;
-        recordUsage(measurement);
-      }
+      if (event.type === 'done') { finished = true; truncated = event.truncated; }
     }
     if (!finished || !answer) throw new Error('Yanıt tamamlanamadı. Tekrar deneyebilirsin.');
     messages.push({ role: 'user', content }, { role: 'assistant', content: answer });
     saveConversation();
-    if (truncated) text.textContent += '\n\n[Devamını isteyebilirsin.]';
-    const tokenNote = document.createElement('small');
-    tokenNote.className = 'token-note';
-    tokenNote.textContent = measurement?.source === 'faq' ? 'Hazır cevap · Claude API kullanılmadı · 0 API tokenı' : measurement ? `Giriş ${formatTokens(measurement.inputTokens)} · Çıkış ${formatTokens(measurement.outputTokens)} token · ≈ ${formatCost(measurement.estimatedUsd)}` : 'Bu yanıt için kullanım verisi alınamadı.';
-    pending.querySelector('.bubble').append(tokenNote);
+    if (truncated) text.textContent += '\n\nDevamını isteyebilirsin.';
     input.value = '';
     suggestions.hidden = true;
   } catch (error) {
     pending.remove();
     userBox.remove();
-    errorBox.textContent = ['TimeoutError', 'AbortError'].includes(error.name) ? 'Bekleme süresi doldu. Mesajın korunuyor, tekrar deneyebilirsin.' : error.message;
+    errorBox.textContent = ['TimeoutError', 'AbortError'].includes(error.name) ? 'Yanıt biraz gecikti. Mesajın korunuyor, tekrar deneyebilirsin.' : error.message;
     errorBox.hidden = false;
   } finally {
     busy = false;
@@ -166,6 +135,3 @@ if (messages.length) {
   for (const message of messages) addMessage(message.role, message.content);
   suggestions.hidden = true;
 } else welcome();
-fetch('/api/status').then(r => r.json()).then(data => {
-  document.querySelector('#status').textContent = data.configured ? `Pursuk · ${data.model} · En fazla 30 soru-cevap turu · Sohbet bu sekmede korunur` : 'Kurulum gerekli: Claude anahtarı henüz eklenmedi. anahtar-ekle.ps1 ile ekleyip sunucuyu yeniden başlat.';
-}).catch(() => { document.querySelector('#status').textContent = 'Sunucuya ulaşılamadı. Sayfayı yenilemeyi dene.'; });
