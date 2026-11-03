@@ -28,7 +28,9 @@
       "Madset hakkında bilgi verir misin?",
       "Madset tam olarak nedir?",
       "Madset bana ne sağlar?",
-      "Madset uygulaması ne işe yarıyor?"
+      "Madset uygulaması ne işe yarıyor?",
+      "Madset’i tanımak istiyorum",
+      "Madseti tanımak istiyorum"
     ],
     "answer": "Madset, küçük ve orta ölçekli işletmelerin reklamlarını kendilerinin yönetmesine yardımcı olan bir platform. Reklam içeriği hazırlama, yayınlama ve sonuçları anlama süreçlerini destekler. Bütçe ve yayın onayı sende kalır."
   },
@@ -59,7 +61,8 @@
       "Destek mail adresi ne?",
       "İletişim bilgileriniz neler?",
       "Destek mailiniz nedir?",
-      "Destek e-posta adresiniz nedir?"
+      "Destek e-posta adresiniz nedir?",
+      "Destek ekibi"
     ],
     "answer": "Destek için tanıtım belgesinde yer alan info@pursula.com adresine yazabilirsin. Ben doğrudan aktarım veya destek kaydı oluşturamıyorum; istersen göndereceğin mesajı hazırlamana yardımcı olurum."
   },
@@ -153,5 +156,41 @@
       "Madset Adviset nedir?"
     ],
     "answer": "Adviset, reklam sonuçlarını anlaşılır önerilere dönüştüren Madset katmanı. Öneriler fırsat, uyarı, bağlantı gerekli veya bilgi türünde olabilir. Değişiklikler senin onayınla uygulanır."
+  },
+  {
+    "id": "ozellikler",
+    "questions": [
+      "Madset özellikleri nelerdir?",
+      "Madset hangi özellikleri sunuyor?",
+      "Madsetin özellikleri neler?"
+    ],
+    "answer": "Madset'te öne çıkanlar:\n\n• Markana uygun reklam içeriği hazırlama.\n• Facebook ve Instagram reklamlarını yayınlama ve yönetme.\n• WhatsApp üzerinden gelen satışları reklamlara ilişkilendirme.\n• Sonuçları anlaşılır önerilerle değerlendirme.\n\nBütçe ve yayın onayı sende kalır."
+  },
+  {
+    "id": "kullanim-yardimi",
+    "questions": [
+      "Kullanırken yardıma ihtiyacım var",
+      "Madset kullanırken yardıma ihtiyacım var",
+      "Madset kullanımında yardım istiyorum"
+    ],
+    "answer": "Tabii, hangi konuda yardıma ihtiyacın var? Hesap bağlantısı, içerik hazırlama veya destek ekibi seçeneklerinden birini seçebilirsin. İstersen sorunu doğrudan da yazabilirsin."
+  },
+  {
+    "id": "hesap-baglantisi",
+    "questions": [
+      "Hesap bağlantısı kurmak",
+      "Madset hesap bağlantısını nasıl kurarım?",
+      "Madset hesaplarını nasıl bağlarım?"
+    ],
+    "answer": "Madset'in başlangıç akışında Facebook Sayfan ve Instagram hesabın kullanılıyor. Doğru hesaplarla giriş yaptığını ve ilgili hesapları yönetme erişimin olduğunu kontrol et.\n\nBağlantı tamamlanmıyorsa gördüğün hata mesajını kişisel bilgileri gizleyerek info@pursula.com adresine iletebilirsin. Şifre veya doğrulama kodu paylaşma."
+  },
+  {
+    "id": "icerik-hazirlama",
+    "questions": [
+      "İçerik hazırlama",
+      "Madset içerik hazırlama",
+      "Madset'te nasıl içerik hazırlarım?"
+    ],
+    "answer": "Önce markanı web siten, Instagram hesabın veya ürün bilgilerinle tanıt. Madset, marka profiline göre reklam içerikleri hazırlar.\n\nHazırlanan görseli, mesajı ve hedefi kontrol et; bütçeni belirleyip onay ver. Onaylamadığın içerik yayına alınmaz."
   }
 ]

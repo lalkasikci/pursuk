@@ -10,10 +10,11 @@
 <body class="chat-page">
   <main>
     <header class="chat-header"><div class="chat-identity"><img class="avatar" src="/porsuk.png" alt="" width="40" height="40"><div><h1>Pursuk</h1><p>Madset asistanın</p></div></div><button id="reset" type="button">Yeni sohbet</button></header>
+    <div id="account-panel" aria-live="polite">Hesap bilgisi yükleniyor…</div>
     <section id="messages" role="log" aria-label="Sohbet" aria-live="polite"></section>
-    <div id="suggestions" aria-label="Örnek sorular"><button type="button">Madset ile nasıl başlarım?</button><button type="button">Reklamım neden satış getirmiyor?</button></div>
+    <div id="suggestions" aria-label="Konuşma seçenekleri"><button type="button" data-action="madset-intro">Madset’i tanımak istiyorum</button><button type="button" data-action="help-intro">Kullanırken yardıma ihtiyacım var</button></div>
     <p id="error" role="alert" hidden></p>
-    <form id="chat-form">
+    <form id="chat-form" hidden>
       <label for="message">Pursuk'a sor</label>
       <div class="composer"><textarea id="message" rows="2" maxlength="6000" placeholder="Mesajını yaz…" required></textarea><button id="send" type="submit">Gönder</button></div>
       <p class="note">Yanıt için mesajların Anthropic'e gönderilebilir. Hassas bilgi paylaşma.</p>

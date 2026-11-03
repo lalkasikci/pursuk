@@ -10,6 +10,7 @@ export function createTelemetry() {
       const previous = records.get(id);
       records.set(id, { id, time: previous?.time || new Date().toISOString(), question: redactQuestion(question),
         source: route.source, topic: route.topic || null, method: route.method || null,
+        context: route.context || previous?.context || null,
         complete, measurement: validMeasurement(measurement) ? measurement : previous?.measurement || null });
       if (records.size > 500) records.delete(records.keys().next().value);
     },
@@ -19,6 +20,7 @@ export function createTelemetry() {
       return { startedAt, retained: list.length, capacity: 500,
         faq: list.filter(item => item.source === 'faq').length,
         llm: list.filter(item => item.source === 'llm').length,
+        summaries: list.filter(item => item.source === 'summary').length,
         unmeasured: list.filter(item => !item.measurement).length,
         totals: usageTotals(measured), records: list.slice(-100).reverse() };
     }

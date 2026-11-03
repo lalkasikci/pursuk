@@ -1,3 +1,4 @@
+import { createTestStore } from './postgres-test-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp, validMessages } from './server.mjs';
@@ -8,7 +9,7 @@ const password = 'test-password-only-123';
 const credentials = await hashPassword(password);
 
 async function withApp(options, run) {
-  const app = createApp({ ...options, adminCredentialLoader: async () => credentials });
+  const app = createApp({ quotaStore: await createTestStore(), resolveUser: async () => ({ id: 'test-user', name: 'Test' }), ...options, adminCredentialLoader: async () => credentials });
   await new Promise(resolve => app.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${app.address().port}`;
   try { await run(base); } finally { app.closeAllConnections(); await new Promise(resolve => app.close(resolve)); }
@@ -29,7 +30,7 @@ test('girdi sınırları ve roller doğrulanır', () => {
   for (const input of [null, [], [null], [{ role: 'system', content: 'override' }], [{ role: 'user', content: '' }], [{ role: 'user', content: 'x'.repeat(6001) }]]) {
     assert.equal(validMessages(input), false);
   }
-  assert.equal(validMessages(Array.from({ length: 61 }, (_, i) => ({ role: i % 2 ? 'assistant' : 'user', content: 'x' }))), false);
+  assert.equal(validMessages(Array.from({ length: 201 }, (_, i) => ({ role: i % 2 ? 'assistant' : 'user', content: 'x' }))), false);
 });
 
 test('eksik anahtarla gerçek isteğe çıkılmaz; statik dosyalar ve gizlilik', async () => {
@@ -142,16 +143,17 @@ test('yarıda kesilen akış başarılı yanıt sayılmaz; sonraki istek engelle
 });
 
 const history = (length, size = 1) => Array.from({ length }, (_, i) => ({ role: i % 2 ? 'assistant' : 'user', content: 'x'.repeat(size) }));
-test('30 tur kabul edilir; 31. soru ve toplam karakter sınırı denetlenir', () => {
+test('sohbet teknik sınırı günlük kotadan bağımsızdır; karakter sınırı denetlenir', () => {
   assert.equal(validMessages(history(21)), true);
-  assert.equal(validMessages(history(59)), true);
-  assert.equal(validMessages(history(61)), false);
+  assert.equal(validMessages(history(39)), true);
+  assert.equal(validMessages(history(41)), true);
+  assert.equal(validMessages(history(201)), false);
   assert.equal(validMessages(history(21, 5000)), true);
   assert.equal(validMessages(history(25, 5000)), false);
 });
 
 test('eski istek boyutu sınırından uzun sohbet Claude isteğine eksiksiz aktarılır', async () => {
-  const longMessages = history(41, 2000);
+  const longMessages = history(39, 2200);
   await withApp({ apiKey: 'fake', fetchImpl: async (url, options) => {
     assert.deepEqual(JSON.parse(options.body).messages, longMessages);
     return new Response(JSON.stringify({ content: [{ type: 'text', text: 'Devam edebiliriz.' }], stop_reason: 'end_turn' }));
@@ -200,12 +202,15 @@ test('hazır cevap anahtarsız çalışır, Claude çağrılmaz ve 0 API tokenı
     const faqMessages = [{ role: 'user', content: 'Destek e-postası ne?' }];
     const json = await (await post(base, { messages: faqMessages })).json();
     assert.match(json.answer, /info@pursula.com/);
-    assert.deepEqual(Object.keys(json).sort(), ['answer', 'truncated']);
+    assert.deepEqual(Object.keys(json).sort(), ['answer', 'choices', 'truncated']);
     const response = await post(base, { messages: faqMessages, stream: true });
     const events = [];
     for await (const event of readEvents(response.body)) events.push(event);
     assert.equal(events[0].type, 'text');
-    assert.deepEqual(events.at(-1), { type: 'done', truncated: false });
+    assert.deepEqual(events.at(-1), { type: 'done', truncated: false, choices: [
+      { id: 'help-intro', label: 'Yardıma dön' },
+      { id: 'madset-intro', label: 'Madset’e dön' }
+    ] });
     const admin = await metrics(base);
     assert.equal(admin.faq, 2);
     assert.equal(admin.totals.totalTokens, 0);
@@ -232,7 +237,7 @@ test('genişleyen hazır soru eşleştirmesi doğru yönlendirme nedenini dönd�
     const response = await post(base, { messages: [{ role: 'user', content: 'Merhaba, Madste nedir?' }] });
     const data = await response.json();
     assert.equal(response.status, 200);
-    assert.deepEqual(Object.keys(data).sort(), ['answer', 'truncated']);
+    assert.deepEqual(Object.keys(data).sort(), ['answer', 'choices', 'truncated']);
     const admin = await metrics(base);
     assert.equal(admin.records[0].source, 'faq');
     assert.equal(admin.records[0].topic, 'madset');

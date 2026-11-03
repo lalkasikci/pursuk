@@ -4,3 +4,8 @@ node_modules/
 *.log
 porsuk.png
 .admin-auth.json
+
+.pursuk-quota.sqlite*
+
+.postgres-data/
+.postgres-local.json

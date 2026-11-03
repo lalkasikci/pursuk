@@ -1,5 +1,7 @@
+import { refreshAccount } from './account.js';
 import { readEvents } from './sse.mjs';
-import { limits, storageKey, restoreConversation } from './conversation.mjs';
+import { limits } from './conversation.mjs';
+import { initialChoices, safeChoices } from './chat-flow.mjs';
 const log = document.querySelector('#messages');
 const form = document.querySelector('#chat-form');
 const input = document.querySelector('#message');
@@ -13,10 +15,30 @@ try {
   storage.removeItem('porsuk-token-usage-v1');
   storage.removeItem('pursuk-routing-v1');
 } catch { /* Chat works when storage is disabled. */ }
-let messages = restoreConversation(storage);
+let messages = [];
+let conversationId;
+try { conversationId = storage?.getItem('pursuk-context-id-v1'); } catch { /* Optional storage. */ }
+if (!/^[a-f0-9-]{36}$/i.test(conversationId || '')) conversationId = crypto.randomUUID();
+function saveContextId() {
+  try { storage?.setItem('pursuk-context-id-v1', conversationId); } catch { /* Optional storage. */ }
+}
 let busy = false;
-function saveConversation() {
-  try { storage?.setItem(storageKey, JSON.stringify(messages)); } catch { /* Optional storage. */ }
+let historyReady = false;
+let selectedAction = null;
+let activeChoices = [];
+function showChoices(choices) {
+  activeChoices = safeChoices(choices);
+  suggestions.replaceChildren();
+  for (const choice of activeChoices) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = choice.label;
+    button.dataset.action = choice.id;
+    button.disabled = busy;
+    suggestions.append(button);
+  }
+  suggestions.hidden = activeChoices.length === 0;
+  log.scrollTop = log.scrollHeight;
 }
 function addMessage(role, content) {
   const box = document.createElement('article');
@@ -46,11 +68,12 @@ function welcome() {
   addMessage('assistant', 'Merhaba, ben Pursuk! 👋 Madset ve reklam sorularında yanındayım. Bugün neyi çözelim?');
 }
 reset.addEventListener('click', () => {
-  if (busy) return;
+  if (busy || !historyReady) return;
   messages = [];
-  saveConversation();
+  conversationId = crypto.randomUUID();
+  saveContextId();
   log.replaceChildren();
-  suggestions.hidden = false;
+  showChoices(initialChoices);
   errorBox.hidden = true;
   input.value = '';
   welcome();
@@ -59,7 +82,9 @@ reset.addEventListener('click', () => {
 suggestions.addEventListener('click', event => {
   if (event.target.tagName !== 'BUTTON' || busy) return;
   input.value = event.target.textContent;
+  selectedAction = event.target.dataset.action;
   form.requestSubmit();
+  selectedAction = null;
 });
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && window.parent !== window) window.parent.postMessage({ type: 'pursuk:close' }, location.origin);
@@ -73,10 +98,11 @@ input.addEventListener('keydown', event => {
 form.addEventListener('submit', async event => {
   event.preventDefault();
   const content = input.value.trim();
-  if (!content || busy) return;
+  const action = selectedAction;
+  if (!content || busy || !historyReady) return;
   const nextMessages = [...messages, { role: 'user', content }];
   if (nextMessages.length > limits.messages || nextMessages.reduce((n, m) => n + m.content.length, 0) > limits.totalCharacters) {
-    errorBox.textContent = 'Bu sohbet uzadı. Devam etmek için yeni sohbet başlatabilirsin.';
+    errorBox.textContent = 'Bu sohbet çok uzadı. Yeni sohbet açarak devam edebilirsin; kalan mesaj hakkın korunur.';
     errorBox.hidden = false;
     return;
   }
@@ -91,7 +117,7 @@ form.addEventListener('submit', async event => {
   try {
     const response = await fetch('/api/chat', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stream: true, messages: nextMessages }),
+      body: JSON.stringify({ stream: true, messages: nextMessages, conversationId, ...(action ? { action } : {}) }),
       signal: AbortSignal.timeout(limits.responseTimeoutMs + 10000)
     });
     if (!response.ok) {
@@ -101,6 +127,7 @@ form.addEventListener('submit', async event => {
     let answer = '';
     let finished = false;
     let truncated = false;
+    let nextChoices = [];
     const text = pending.querySelector('p');
     for await (const event of readEvents(response.body)) {
       if (event.type === 'error') throw new Error(event.error);
@@ -110,14 +137,13 @@ form.addEventListener('submit', async event => {
         pending.classList.remove('pending');
         log.scrollTop = log.scrollHeight;
       }
-      if (event.type === 'done') { finished = true; truncated = event.truncated; }
+      if (event.type === 'done') { finished = true; truncated = event.truncated; nextChoices = safeChoices(event.choices); }
     }
     if (!finished || !answer) throw new Error('Yanıt tamamlanamadı. Tekrar deneyebilirsin.');
     messages.push({ role: 'user', content }, { role: 'assistant', content: answer });
-    saveConversation();
     if (truncated) text.textContent += '\n\nDevamını isteyebilirsin.';
     input.value = '';
-    suggestions.hidden = true;
+    showChoices(nextChoices);
   } catch (error) {
     pending.remove();
     userBox.remove();
@@ -129,9 +155,39 @@ form.addEventListener('submit', async event => {
     for (const button of suggestions.querySelectorAll('button')) button.disabled = false;
     send.textContent = 'Gönder';
     input.focus();
+    await refreshAccount();
   }
 });
-if (messages.length) {
-  for (const message of messages) addMessage(message.role, message.content);
-  suggestions.hidden = true;
-} else welcome();
+const rawStorage = storage;
+let accountId;
+window.addEventListener('pursuk:account', async event => {
+  if (accountId === event.detail) return;
+  accountId = event.detail;
+  storage = rawStorage ? {
+    getItem: key => rawStorage.getItem(accountId + ':' + key),
+    setItem: (key, value) => rawStorage.setItem(accountId + ':' + key, value)
+  } : undefined;
+  historyReady=false;
+  try {
+    let storedId;
+    try { storedId=storage?.getItem('pursuk-context-id-v1'); } catch { /* Optional. */ }
+    const validId=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storedId || '');
+    const result=await fetch('/api/conversations/'+(validId?storedId:'latest'));
+    if (!result.ok && result.status!==404) throw new Error('Sohbet geçmişine şu anda ulaşılamıyor. Sayfayı yenileyip tekrar deneyebilirsin.');
+    const saved=result.ok?await result.json():null;
+    conversationId=saved?.id || (validId?storedId:crypto.randomUUID());
+    messages=saved?.messages || [];
+    saveContextId();
+    log.replaceChildren();
+    if(messages.length) {
+      for(const message of messages) addMessage(message.role,message.content);
+      showChoices(saved.choices || []);
+    } else { welcome();showChoices(initialChoices); }
+    historyReady=true;
+  } catch(error) {
+    errorBox.textContent=error.message;
+    errorBox.hidden=false;
+    accountId=null;
+  }
+});
+await refreshAccount();

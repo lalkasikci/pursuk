@@ -5,7 +5,15 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file-if-exists=.env.local server.mjs",
-    "test": "node --test"
+    "test": "node --env-file-if-exists=.env.local --test",
+    "db:setup-local": "node postgres-local.mjs setup",
+    "db:stop-local": "node postgres-local.mjs stop",
+    "test:postgres": "node --env-file-if-exists=.env.local --test postgres.test.mjs"
   },
-  "engines": { "node": ">=22" }
+  "engines": {
+    "node": ">=22.16"
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
 }

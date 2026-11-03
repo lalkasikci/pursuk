@@ -1,3 +1,4 @@
+import { createTestStore } from './postgres-test-helper.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from './server.mjs';
@@ -6,7 +7,7 @@ import { readEvents } from './sse.mjs';
 const password = 'sample-password-12345';
 const credentials = await hashPassword(password);
 async function run(options, callback) {
-  const server = createApp({ apiKey: '', adminCredentialLoader: async () => credentials, ...options });
+  const server = createApp({ quotaStore: await createTestStore(), resolveUser: async () => ({ id: 'test-user', name: 'Test' }), apiKey: '', adminCredentialLoader: async () => credentials, ...options });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   try { await callback(`http://127.0.0.1:${server.address().port}`); }
   finally { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); }
@@ -20,12 +21,14 @@ test('ziyaretçi ve yetkisiz istekler model, maliyet ve yönlendirme verisi alam
     assert.equal((await fetch(`${base}/api/admin/metrics?password=${password}`)).status, 401);
     assert.equal((await fetch(`${base}/.admin-auth.json`)).status, 404);
     const response = await (await ask(base)).json();
-    assert.deepEqual(Object.keys(response).sort(), ['answer', 'truncated']);
+    assert.deepEqual(Object.keys(response).sort(), ['answer', 'choices', 'truncated']);
     const streamed = await ask(base, true);
     const events = [];
     for await (const event of readEvents(streamed.body)) events.push(event);
     assert.deepEqual(events.map(event => event.type), ['text', 'done']);
-    assert.deepEqual(events[1], { type: 'done', truncated: false });
+    assert.equal(events[1].type, 'done');
+    assert.equal(events[1].truncated, false);
+    assert.deepEqual(Object.keys(events[1]).sort(), ['choices', 'truncated', 'type']);
     const page = await (await fetch(`${base}/chat`)).text();
     assert.equal(/Token kullanımı|Hazır cevap mı|claude-sonnet|usage-panel/.test(page), false);
     const script = await (await fetch(`${base}/app.js`)).text();

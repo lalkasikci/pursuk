@@ -1,5 +1,5 @@
 export const routingStorageKey = 'pursuk-routing-v1';
-export const methodLabels = { exact: 'Kayıtlı soru', polite: 'Selamlama/nezaket farkı', wording: 'E-posta yazım farkı', spelling: 'Küçük yazım hatası' };
+export const methodLabels = { guided: 'Seçenekli akış', exact: 'Kayıtlı soru', polite: 'Selamlama/nezaket farkı', wording: 'E-posta yazım farkı', spelling: 'Küçük yazım hatası' };
 export function redactQuestion(text) {
   return String(text)
     .replace(/\bsk-(?:ant|proj)-[A-Za-z0-9_.-]+/gi, '[anahtar]')

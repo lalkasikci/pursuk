@@ -51,3 +51,8 @@ export async function findFaq(question) {
   const entries = JSON.parse(await readFile(new URL('./hazir-yanitlar.json', import.meta.url), 'utf8'));
   return matchFaq(question, entries);
 }
+
+export async function findFaqById(id) {
+  const entries = JSON.parse(await readFile(new URL('./hazir-yanitlar.json', import.meta.url), 'utf8'));
+  return entries.find(entry => entry.id === id && typeof entry.answer === 'string' && entry.answer.trim()) || null;
+}

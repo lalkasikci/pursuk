@@ -1,4 +1,4 @@
-export const limits = Object.freeze({ messages: 60, perMessage: 6000, totalCharacters: 120000, requestBytes: 750000, responseTimeoutMs: 120000 });
+export const limits = Object.freeze({ messages: 200, perMessage: 6000, totalCharacters: 120000, requestBytes: 750000, responseTimeoutMs: 120000 });
 export const storageKey = 'porsuk-conversation-v1';
 
 export function validMessages(messages) {
