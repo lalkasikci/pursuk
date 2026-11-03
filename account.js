@@ -15,7 +15,7 @@ export async function refreshAccount() {
       lastUserId = data.user.id;
       window.dispatchEvent(new CustomEvent('pursuk:account', { detail: data.user.id }));
       const text = document.createElement('span');
-      text.textContent = `${data.mock ? 'Test hesabı · ' : ''}${data.user.name} · Bugün ${data.quota.dailyRemaining}, bu ay ${data.quota.monthlyRemaining} mesaj hakkın var.`;
+      text.textContent = `${data.mock ? 'Test hesabı · ' : ''}${data.user.name} · Bugün ${data.quota.dailyRemaining}, bu ay ${data.quota.monthlyRemaining} yapay zekâ mesaj hakkın var. Hazır cevaplar hakkından düşmez.`;
       panel.append(text);
       if (data.mock) {
         const button = document.createElement('button');

@@ -127,13 +127,6 @@ export function createApp({ apiKey = process.env.ANTHROPIC_API_KEY, model = proc
       } else {
         try { faq = await findFaq(body.messages.at(-1).content); } catch { /* If the catalogue is unavailable, use Claude. */ }
       }
-      if (!faq) {
-        if (!apiKey) return reply(res, 503, { error: 'Şu anda yanıt veremiyorum. Lütfen biraz sonra tekrar dene.' });
-        recent = recent.filter(t => Date.now() - t < 60000);
-        if (busy || recent.length >= 20) return reply(res, 429, { error: 'Kısa süre içinde çok fazla istek geldi. Biraz sonra tekrar deneyin.' });
-      }
-      ticket = await quota.reserve(user.id);
-      if (!ticket.allowed) return reply(res, 429, { error: ticket.error, code: 'quota_' + ticket.reason });
       if (faq) {
         const choices = choicesForTopic(faq.id);
         await saveAnswer(faq.answer,choices);
@@ -148,6 +141,8 @@ export function createApp({ apiKey = process.env.ANTHROPIC_API_KEY, model = proc
         }
         return reply(res, 200, { answer: faq.answer, truncated: false, ...(choices.length ? { choices } : {}) });
       }
+      ticket = await quota.reserve(user.id);
+      if (!ticket.allowed) return reply(res, 429, { error: ticket.error, code: 'quota_' + ticket.reason });
       if (!apiKey) return reply(res, 503, { error: 'Şu anda yanıt veremiyorum. Lütfen biraz sonra tekrar dene.' });
       recent = recent.filter(t => Date.now() - t < 60000);
       if (busy || recent.length >= 20) return reply(res, 429, { error: 'Kısa süre içinde çok fazla istek geldi. Biraz sonra tekrar deneyin.' });

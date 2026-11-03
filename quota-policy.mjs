@@ -1,7 +1,7 @@
 export const quotaLimits = Object.freeze({ daily: 20, monthly: 400 });
 export const quotaMessages = Object.freeze({
-  daily: 'Bugünlük mesaj hakkın doldu. Yarın yeniden konuşabiliriz! Sorunun devam ediyorsa info@pursula.com adresine e-posta gönderebilirsin.',
-  monthly: 'Bu ayki mesaj hakkın doldu. Gelecek ay yeniden konuşabiliriz! Sorunun devam ediyorsa info@pursula.com adresine e-posta gönderebilirsin.'
+  daily: 'Bugünlük yapay zekâ mesaj hakkın doldu. Hazır sorular ve menü seçenekleriyle devam edebilirsin. Yarın yeniden konuşabiliriz! Sorunun devam ediyorsa info@pursula.com adresine e-posta gönderebilirsin.',
+  monthly: 'Bu ayki yapay zekâ mesaj hakkın doldu. Hazır sorular ve menü seçenekleriyle devam edebilirsin. Gelecek ay yeniden konuşabiliriz! Sorunun devam ediyorsa info@pursula.com adresine e-posta gönderebilirsin.'
 });
 export const mockAccounts = [
   { id: 'demo-ayse', name: 'Ayşe · boş hesap', daily: 0, monthly: 0 },

@@ -61,12 +61,12 @@ test('PostgreSQL: kalıcı kota, eşzamanlı erişim, sohbet ve özet belleği',
       assert.equal(saved.messages.length,4);
       assert.equal(JSON.stringify(saved.messages).includes('Sahte'),false);
       assert.equal((await fetch(base+'/api/conversations/'+conversationId,{headers:{'x-test-user':'other'}})).status,404);
-      assert.equal((await store.status(other)).dailyUsed,1);
+      assert.equal((await store.status(other)).dailyUsed,0);
       const failed=await fetch(base+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({conversationId,messages:[{role:'user',content:'Reklamım satış getirmiyor. Ne yapmalıyım?'}]})});
       assert.equal(failed.status,502);
       // Wait for the response-finally cleanup, which returns the reserved quota.
-      for(let i=0;i<20 && (await store.status(other)).dailyUsed!==1;i++) await new Promise(resolve=>setTimeout(resolve,10));
-      assert.equal((await store.status(other)).dailyUsed,1);
+      for(let i=0;i<20 && (await store.status(other)).dailyUsed!==0;i++) await new Promise(resolve=>setTimeout(resolve,10));
+      assert.equal((await store.status(other)).dailyUsed,0);
       assert.equal((await store.conversation(other,conversationId)).messages.length,4);
     } finally {app.closeAllConnections();await new Promise(resolve=>app.close(resolve));store=null;}
 

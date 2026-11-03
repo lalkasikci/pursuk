@@ -3,6 +3,35 @@ import assert from 'node:assert/strict';
 import { createTestStore } from './postgres-test-helper.mjs';
 import { periods } from './quota-policy.mjs';
 import { createApp } from './server.mjs';
+import { randomUUID } from 'node:crypto';
+
+test('günlük veya aylık hak sıfırken hazır yanıt ve menü ücretsiz, kalıcı ve Claude çağrısızdır', async () => {
+  const store=await createTestStore({mock:true});
+  await store.reserve('demo-gunluk');
+  await store.reserve('demo-aylik');
+  let calls=0;
+  await withApp({quotaStore:store,conversationStore:store,mockAuth:true,apiKey:'fake',fetchImpl:()=>{calls++;throw new Error('Claude çağrılmamalı');}},async base=>{
+    for(const [id,reason] of [['demo-gunluk','daily'],['demo-aylik','monthly']]) {
+      const cookie=await login(base,id),conversationId=randomUUID();
+      const before=await store.status(id);
+      const faq=await post(base,'/api/chat',{...data,conversationId},cookie);
+      assert.equal(faq.status,200);
+      assert.ok((await faq.json()).answer);
+      const menu=await post(base,'/api/chat',{conversationId,action:'help-intro',stream:true,messages:[{role:'user',content:'Kullanırken yardıma ihtiyacım var'}]},cookie);
+      assert.equal(menu.status,200);
+      assert.match(await menu.text(), /"type":"done"/);
+      assert.equal((await store.conversation(id,conversationId)).messages.length,4);
+      const denied=await post(base,'/api/chat',{conversationId,messages:[{role:'user',content:'Reklamım tıklama alıyor ama satış yok. Bana özel strateji verir misin?'}]},cookie);
+      assert.equal(denied.status,429);
+      const error=await denied.json();
+      assert.equal(error.code,'quota_'+reason);
+      assert.match(error.error,/Hazır sorular/);
+      assert.deepEqual(await store.status(id),before);
+      assert.equal((await store.conversation(id,conversationId)).messages.length,4);
+    }
+    assert.equal(calls,0);
+  });
+});
 
 test('gün ve ay Türkiye gece yarısında değişir; günlük sıfırlanırken aylık birikir', async () => {
   let time = new Date('2026-11-03T20:59:59Z');
@@ -67,7 +96,8 @@ async function login(base,id) {
 }
 
 test('giriş zorunludur; yeni sohbet ve sahte kimlik kotayı sıfırlamaz; eşzamanlı son hak bir kez kullanılır', async () => {
-  await withApp({ mockAuth:true, quotaStore:await createTestStore({mock:true}), apiKey:'' }, async base => {
+  await withApp({ mockAuth:true, quotaStore:await createTestStore({mock:true}), apiKey:'fake', fetchImpl:async()=>new Response(JSON.stringify({content:[{type:'text',text:'Hedef kitleni belirleyelim.'}],stop_reason:'end_turn'})) }, async base => {
+    const data={messages:[{role:'user',content:'Reklamım satış getirmiyor. Nasıl iyileştirebilirim?'}]};
     assert.equal((await post(base,'/api/chat', {...data,userId:'demo-ayse'})).status,401);
     const cookie = await login(base,'demo-gunluk');
     const results = await Promise.all(Array.from({length:5},()=>post(base,'/api/chat',{...data,userId:'demo-ayse'},cookie)));
@@ -79,7 +109,7 @@ test('giriş zorunludur; yeni sohbet ve sahte kimlik kotayı sıfırlamaz; eşza
     const other = await login(base,'demo-deniz');
     assert.equal((await post(base,'/api/chat',data,other)).status,200);
     const monthly = await login(base,'demo-aylik');
-    assert.equal((await post(base,'/api/chat',{...data,stream:true},monthly)).status,200);
+    assert.equal((await post(base,'/api/chat',data,monthly)).status,200);
     assert.equal((await (await post(base,'/api/chat',data,monthly)).json()).code,'quota_monthly');
     await post(base,'/api/mock/logout',{},other);
     assert.equal((await post(base,'/api/chat',data,other)).status,401);
