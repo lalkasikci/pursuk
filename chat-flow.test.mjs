@@ -14,8 +14,8 @@ test('tanıtım akışının üç adımı API anahtarı olmadan ve Claude çağ�
   try {
     for (const [action, label, pattern] of [
       ['madset-intro', 'Madset’i tanımak istiyorum', /platform/],
-      ['madset-features', 'Özellikler', /Facebook ve Instagram/],
-      ['madset-start', 'Nasıl başlarım?', /info@pursula.com/]
+      ['madset-features', 'Özellikler', /Google Ads/],
+      ['madset-start', 'Nasıl başlarım?', /Facebook Hesabını Bağla/]
     ]) {
       messages.push({ role: 'user', content: label });
       const response = await fetch(`${base}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, messages, stream: true }) });
@@ -56,8 +56,8 @@ test('kullanım yardımı ve üç alt konu Claude kullanmadan, özel veriler sı
   try {
     for (const [action, label, expected] of [
       ['help-intro', 'Kullanırken yardıma ihtiyacım var', /hangi konuda/],
-      ['help-account', 'Hesap bağlantısı kurmak', /Facebook Sayfan ve Instagram/],
-      ['help-content', 'İçerik hazırlama', /marka profiline göre/],
+      ['help-account', 'Hesap bağlantısı kurmak', /Facebook Hesabını Bağla/],
+      ['help-content', 'İçerik hazırlama', /Marka Beyni'ne göre/],
       ['help-support', 'Destek ekibi', /info@pursula.com/]
     ]) {
       messages.push({ role: 'user', content: label });

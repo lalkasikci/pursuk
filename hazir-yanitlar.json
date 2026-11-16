@@ -32,7 +32,7 @@
       "Madset’i tanımak istiyorum",
       "Madseti tanımak istiyorum"
     ],
-    "answer": "Madset, küçük ve orta ölçekli işletmelerin reklamlarını kendilerinin yönetmesine yardımcı olan bir platform. Reklam içeriği hazırlama, yayınlama ve sonuçları anlama süreçlerini destekler. Bütçe ve yayın onayı sende kalır."
+    "answer": "Madset, küçük ve orta ölçekli işletmelerin reklamlarını tek panelden hazırlayıp yayınlamasına ve sonuçlarını anlamasına yardımcı olan bir platform. Facebook ve Instagram'da (Meta) ve Google Ads'te reklam verebilirsin. Bütçe ve yayın onayı sende kalır."
   },
   {
     "id": "iletisim",
@@ -64,7 +64,7 @@
       "Destek e-posta adresiniz nedir?",
       "Destek ekibi"
     ],
-    "answer": "Destek için tanıtım belgesinde yer alan info@pursula.com adresine yazabilirsin. Ben doğrudan aktarım veya destek kaydı oluşturamıyorum; istersen göndereceğin mesajı hazırlamana yardımcı olurum."
+    "answer": "Destek için info@pursula.com adresine yazabilirsin; panelde Geri Bildirim sayfası da var. Ben doğrudan aktarım veya destek kaydı oluşturamıyorum; istersen göndereceğin mesajı hazırlamana yardımcı olurum."
   },
   {
     "id": "baslangic",
@@ -77,7 +77,7 @@
       "Madset üyeliği nasıl açılır?",
       "Madset başlangıç adımları neler?"
     ],
-    "answer": "Başlangıç için info@pursula.com üzerinden iletişime geçebilirsin. Markanı tanıtmak için web siteni, Instagram hesabını veya ürün bilgilerini kullanabilirsin. Güncel kayıt ve kurulum adımlarını ekipten teyit etmeni öneririm."
+    "answer": "Ana Sayfa'daki \"Reklama Kalan Adımlar\" kartı eksik adımlarını gösterir. Önce \"Facebook Hesabını Bağla\" ile Facebook Sayfanı ve reklam hesabını seç. Sonra \"Yeni Reklam Başlat\"a bas, platformu seç ve Kampanya Oluştur, İçerik, Bütçe ve Yayınla adımlarını tamamla."
   },
   {
     "id": "websitesi",
@@ -93,7 +93,7 @@
       "Madset için internet sitesi zorunlu mu?",
       "Madset sadece Instagram ile kullanılabilir mi?"
     ],
-    "answer": "Web sitesi şart değil. Madset'e markanı Instagram hesabın veya ürün bilgilerinle de tanıtabilirsin."
+    "answer": "Web sitesi şart değil. Mesaj, bilgi formu ve bilinirlik reklamlarını sitesiz yayınlayabilirsin. \"Websiteme Gelsin\" ve \"Katalogdan Satış Yap\" amaçları için Marka Beyni'nde web siten olmalı."
   },
   {
     "id": "butce-kontrol",
@@ -108,7 +108,7 @@
       "Madset günlük bütçesini kim ayarlıyor?",
       "Reklam bütçesinin kontrolü kimde?"
     ],
-    "answer": "Günlük reklam bütçesini sen belirlersin. Madset'in bütçe önerileri de ancak onayınla uygulanır. Bu sohbet üzerinden bütçeni değiştiremiyorum."
+    "answer": "Günlük bütçeyi sen belirlersin: reklam grubu başına en az 50 TL, en fazla 1.000 TL. Yayından sonra da reklam grubunun ekranından değiştirebilirsin. Bu sohbet üzerinden bütçeni değiştiremiyorum."
   },
   {
     "id": "onay",
@@ -122,7 +122,7 @@
       "Madset bütçeyi değiştirmeden önce onay istiyor mu?",
       "Madset tavsiyeleri için onay gerekiyor mu?"
     ],
-    "answer": "Madset'te içerik, mesaj ve hedef yayın öncesinde senin onayından geçer. Tavsiyeler ve bütçe değişikliği önerileri de yalnızca onayınla uygulanır."
+    "answer": "Reklamı sen başlatırsın; görsel, metin ve hedef yayından önce senin onayından geçer ve Madset günlük bütçeni kendiliğinden değiştirmez. Birden fazla görselle yayınladığın reklam grubunda ilk hafta Madset'in otomatik testi harcamayı görseller arasında dengeler ve kazananları yayında tutar; değişiklik yaparsan test biter. Öneriler kendiliğinden uygulanmaz."
   },
   {
     "id": "platformlar",
@@ -135,7 +135,7 @@
       "Madset ile nerelerde reklam verebilirim?",
       "Madset hangi kanallarda reklam verir?"
     ],
-    "answer": "Elimdeki Madset ürün notunda Facebook ve Instagram üzerinden yayın akışı anlatılıyor. Diğer platformların güncel canlı desteği doğrulanmış değil; kullanmak istediğin platformu ekiple teyit edebilirsin."
+    "answer": "Facebook ve Instagram'da (Meta) ve Google Ads'te reklam verebilirsin. Mesaj reklamlarında sohbet WhatsApp, Messenger veya Instagram DM'de açılır. ChatGPT reklamları henüz açık değil; panelde \"Yakında\" görünüyor."
   },
   {
     "id": "mindset",
@@ -145,7 +145,7 @@
       "Mindset ne demek?",
       "Madset Mindset nedir?"
     ],
-    "answer": "Mindset, Madset'in marka profili katmanı. Markanın kimliğini, renklerini ve anlatım tonunu ortak bir profilde toplar; içerikler bu profile göre hazırlanır."
+    "answer": "Mindset, madset.ai'de marka zekâsı için kullanılan ad; paneldeki karşılığı Marka Beyni. Markanın tanımını, hedef kitlesini, tonunu, logosunu ve renklerini toplar; reklam içerikleri buna göre hazırlanır."
   },
   {
     "id": "adviset",
@@ -155,7 +155,7 @@
       "Adviset ne demek?",
       "Madset Adviset nedir?"
     ],
-    "answer": "Adviset, reklam sonuçlarını anlaşılır önerilere dönüştüren Madset katmanı. Öneriler fırsat, uyarı, bağlantı gerekli veya bilgi türünde olabilir. Değişiklikler senin onayınla uygulanır."
+    "answer": "Adviset, madset.ai'de reklam önerileri için kullanılan ad; paneldeki karşılığı Ana Sayfa'daki \"Madset ne öneriyor?\" kartları. Reklam sonuçlarını anlaşılır önerilere çevirir; öneri kartları Büyü ve üstü paketlerde. Öneriler kendiliğinden uygulanmaz."
   },
   {
     "id": "ozellikler",
@@ -164,7 +164,7 @@
       "Madset hangi özellikleri sunuyor?",
       "Madsetin özellikleri neler?"
     ],
-    "answer": "Madset'te öne çıkanlar:\n\n• Markana uygun reklam içeriği hazırlama.\n• Facebook ve Instagram reklamlarını yayınlama ve yönetme.\n• WhatsApp üzerinden gelen satışları reklamlara ilişkilendirme.\n• Sonuçları anlaşılır önerilerle değerlendirme.\n\nBütçe ve yayın onayı sende kalır."
+    "answer": "Madset'te öne çıkanlar:\n\n• Yapay zekâ ile markana uygun reklam görseli ve metni.\n• Facebook, Instagram ve Google Ads'te tek panelden yayın ve yönetim.\n• İlk hafta görselleri karşılaştıran otomatik test ve sonuçlara göre öneriler.\n• Bilgi formu yanıtlarını Formlarım'da takip etme.\n\nBütçe ve yayın onayı sende kalır."
   },
   {
     "id": "kullanim-yardimi",
@@ -182,7 +182,7 @@
       "Madset hesap bağlantısını nasıl kurarım?",
       "Madset hesaplarını nasıl bağlarım?"
     ],
-    "answer": "Madset'in başlangıç akışında Facebook Sayfan ve Instagram hesabın kullanılıyor. Doğru hesaplarla giriş yaptığını ve ilgili hesapları yönetme erişimin olduğunu kontrol et.\n\nBağlantı tamamlanmıyorsa gördüğün hata mesajını kişisel bilgileri gizleyerek info@pursula.com adresine iletebilirsin. Şifre veya doğrulama kodu paylaşma."
+    "answer": "Ana Sayfa'daki \"Facebook Hesabını Bağla\" düğmesine bas; açılan Facebook penceresinde Facebook Sayfanı ve reklam hesabını seç. Reklam hesabın yoksa önce Facebook'ta bir reklam hesabı açman gerekir. Instagram hesabı şart değil.\n\nBağlantı tamamlanmıyorsa gördüğün hatayı kişisel bilgileri gizleyerek info@pursula.com adresine iletebilirsin. Şifre veya doğrulama kodu paylaşma."
   },
   {
     "id": "icerik-hazirlama",
@@ -191,6 +191,6 @@
       "Madset içerik hazırlama",
       "Madset'te nasıl içerik hazırlarım?"
     ],
-    "answer": "Önce markanı web siten, Instagram hesabın veya ürün bilgilerinle tanıt. Madset, marka profiline göre reklam içerikleri hazırlar.\n\nHazırlanan görseli, mesajı ve hedefi kontrol et; bütçeni belirleyip onay ver. Onaylamadığın içerik yayına alınmaz."
+    "answer": "İçerik Üret'te İçerik Tarifi yaz ya da Ürünlerim'den ürün seç; Madset, Marka Beyni'ne göre reklam görselleri üretir. Kendi görselini yükleyebilir veya Instagram gönderini kullanabilirsin.\n\nYayın adımında başlık ve metin otomatik yazılır; düzenleyip her reklamı onaylarsın. Onaylamadığın içerik yayına çıkmaz."
   }
 ]
