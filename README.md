@@ -14,7 +14,7 @@ Model `.env.local` içindeki `ANTHROPIC_MODEL` ile değiştirilebilir. Varsayıl
 ## Birlikte geliştireceğimiz dosyalar
 
 - `bot-talimatlari.txt`: Botun görevi, tonu ve sınırları.
-- `madset-bilgi.md`: Tanıtım belgesinden sadeleştirilmiş bilgi; fiyatlar ve belirsiz konular için cevap uydurulmaması gerekir.
+- `madset-bilgi.md`: Madset panelinin bugünkü ekran ve düğme adlarına göre yazılmış ürün bilgisi; fiyatlar ve belirsiz konular için cevap uydurulmaması gerekir.
 - `eval-sorulari.json`: Davranış değerlendirme soruları. İnsan değerlendirmesi içindir, otomatik geçmiş sayılmaz.
 - `server.mjs`: Claude bağlantısı. Anahtar tarayıcıya gönderilmez.
 
@@ -22,7 +22,7 @@ Talimat ve bilgi dosyaları her istekte yeniden okunur. Değişiklikleri denemek
 
 ## Sınırlar
 
-Bu sürüm yalnızca yerel bilgisayarda çalışır; internete açılmaya hazır değildir. Örnek kullanıcı hesapları içerir; gerçek Madset oturumu, reklam hesabı erişimi, işlem araçları, canlı politika araması veya destek kaydı bağlantısı henüz yoktur. Ürün kaynağı 2 Kasım 2026 tarihli kullanıcı belgesidir; bağımsız doğrulanmamıştır.
+Bu sürüm yalnızca yerel bilgisayarda çalışır; internete açılmaya hazır değildir. Örnek kullanıcı hesapları içerir; gerçek Madset oturumu, reklam hesabı erişimi, işlem araçları, canlı politika araması veya destek kaydı bağlantısı henüz yoktur. Ürün kaynağı Madset uygulamasının 16 Kasım 2026 tarihli hâlidir (panel ekranları ve ürün kuralları); uygulama değiştikçe güncellenmesi gerekir.
 
 Tamamlanan sohbetler, hazır seçenekler ve konuşma özetleri kullanıcı ve sohbet kimliği ile PostgreSQL’de kalıcı saklanır. Sunucu geçmişin yetkili kaynağıdır; tarayıcıdan gönderilen eski asistan mesajları kullanılmaz. Tarayıcı yalnızca aktif sohbet kimliğini sessionStorage içinde tutar. Yeni cihaz veya sekmede son dolu sohbet yüklenir. Yeni sohbet önceki kaydı silmez, yeni kimlik açar. Geçişten önce yalnızca tarayıcıda duran sohbet metinleri otomatik aktarılmaz. Claude’a yönlendirilen istekte gerekli geçmiş ve Madset kaynağı Anthropic’e gönderilir.
 
@@ -76,7 +76,7 @@ Seçenekler, konuşma kaydıyla birlikte PostgreSQL’de tutulur. Yeni sohbet il
 
 ## Kullanım yardımı akışı
 
-İlk ekranda "Kullanırken yardıma ihtiyacım var" seçeneği de bulunur. Bu seçenek hesap bağlantısı, içerik hazırlama ve destek ekibi düğmelerini açar. Her düğme izinli sabit eylemle katalogdan yanıt alır; Claude çağrısı yapılmaz. Alt konulardan yardıma dönülebilir. Hesap bağlantısı cevabı mevcut ürün notuna dayanır; doğrulanmamış ekran ve düğme adları, mevcut reklam hesabını devralma desteği veya destek geri dönüş süresi vaat edilmez. Destek düğmesi iletişim adresini gösterir; e-posta göndermez veya destek kaydı açmaz.
+İlk ekranda "Kullanırken yardıma ihtiyacım var" seçeneği de bulunur. Bu seçenek hesap bağlantısı, içerik hazırlama ve destek ekibi düğmelerini açar. Her düğme izinli sabit eylemle katalogdan yanıt alır; Claude çağrısı yapılmaz. Alt konulardan yardıma dönülebilir. Hesap bağlantısı cevabı paneldeki "Facebook Hesabını Bağla" akışını anlatır; mevcut reklam hesabındaki eski kampanyaların aktarımı veya destek geri dönüş süresi vaat edilmez. Destek düğmesi iletişim adresini gösterir; e-posta göndermez veya destek kaydı açmaz.
 
 ## Geçmiş özetleme denemesi
 
